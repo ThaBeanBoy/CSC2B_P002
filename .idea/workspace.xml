@@ -5,24 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="86d849ec-1eec-4b2e-a412-5dd34d9c5e05" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/lib.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/220150124_pc_build.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/build.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/p01.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/GUI/MailUI.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/Model/ConnectionNotCloseException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/Model/FailedConnectionException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/Model/InvalidEmailException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/Model/MailNotSentException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Mail/Model/MailSender.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Mail/Model/MailSender.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Mail/Model/MailSender.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

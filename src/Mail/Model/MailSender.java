@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 /**
  * A class that contains a static method for sending an email to an SMTP server.
@@ -15,6 +16,7 @@ import java.util.Scanner;
  * @version P04
  */
 public class MailSender {
+//    static Socket SMTPSocket = null;
 
     /**
      * Writes a message to a PrintWriter and automatically flushes the message
@@ -46,18 +48,6 @@ public class MailSender {
     }
 
     /**
-     * Write files to a stream
-     * @param out the OutputStream
-     * @param files the files that are meant to be written
-     * @throws IOException if an I/O error occurs.
-     */
-    private static void write(OutputStream out, File[] files) throws IOException{
-        for(File file : files){
-            write(out, file);
-        }
-    }
-
-    /**
      * Gets the response code from an SMTP server
      * @param responseMessage the response message from the Server
      * @return response code
@@ -68,13 +58,19 @@ public class MailSender {
     }
 
     private interface  SMTPCommandAction {
-        void execute(String response);
+        void execute(String response) throws FailedConnectionException, InvalidEmailException, MailNotSentException;
     }
 
-    public static void SMTPCommand(PrintWriter out, InputStreamReader in, String message, SMTPCommandAction lambda){
+    public static void SMTPCommand(PrintWriter out, InputStreamReader in, String message, SMTPCommandAction lambda)
+            throws FailedConnectionException, InvalidEmailException, MailNotSentException {
         write(out, message);
         Scanner response = new Scanner(in);
         lambda.execute(response.nextLine());
+    }
+
+    public static void SMTPCommand (PrintWriter out, InputStreamReader in, String message)
+            throws MailNotSentException, FailedConnectionException, InvalidEmailException {
+        SMTPCommand(out, in, message, res -> {});
     }
 
     /**
@@ -125,70 +121,90 @@ public class MailSender {
             if(getSMTPResponseCode(response) != 220) throw new FailedConnectionException();
 
             // Sending connection request
-            write(out, String.format("HELO %s", host));
-            response = in.nextLine();
-            if(getSMTPResponseCode(response) != 250) throw new FailedConnectionException();
+            SMTPCommand(out, inputStream, String.format("HELO %s", host), (res) -> {
+                if (getSMTPResponseCode(res) != 250) throw new FailedConnectionException();
+            });
 
             // Setting sender email
-            write(out, String.format("MAIL FROM:<%s>", senderEmail.trim()));
-            response = in.nextLine();
-            if(getSMTPResponseCode(response) != 250) throw new InvalidEmailException(senderEmail);
+            SMTPCommand(
+                out,
+                inputStream,
+                String.format("MAIL FROM:<%s>", senderEmail.trim()),
+                (res) -> {
+                    if(getSMTPResponseCode(res) != 250) throw new InvalidEmailException(senderEmail);
+                }
+            );
 
             // Setting recipient
-            write(out, String.format("RCPT TO:<%s>", receiverEmail.trim()));
-            response = in.nextLine();
-            if(getSMTPResponseCode(response) != 250) throw new InvalidEmailException(receiverEmail);
+            SMTPCommand(
+                out,
+                inputStream,
+                String.format("RCPT TO:<%s>", receiverEmail.trim()),
+                res -> {
+                    if(getSMTPResponseCode(res) != 250) throw new InvalidEmailException(receiverEmail);
+                }
+            );
 
             // Setting the CCs & making the CC string
             StringBuilder CCEmailsString = new StringBuilder();
             for (int i=0; i<CCs.length; i++){
                 String CCEmail = CCs[i];
-                // Setting the CC
-                write(out, String.format("RCPT TO:<%s>", CCEmail.trim()));
-                response = in.nextLine();
-                if(getSMTPResponseCode(response) != 250) throw new InvalidEmailException(CCEmail);
+
+                SMTPCommand(
+                    out,
+                    inputStream,
+                    String.format("RCPT TO:<%s>", CCEmail.trim()),
+                    res -> {
+                        if(getSMTPResponseCode(res) != 250) throw new InvalidEmailException(CCEmail);
+                    }
+                );
 
                 // Adding CC email to the CCEmailsString
                 CCEmailsString.append(String.format("%s%s", CCEmail, i==(CCs.length-1) ? ", " : ""));
             }
 
-            write(out, "DATA");
-            response = in.nextLine();
-            System.out.println(response);
+            // Sending the message
+            SMTPCommand(out, inputStream, "DATA");
 
             LocalDate today = LocalDate.now();
             LocalTime now = LocalTime.now();
             String DateTime = String.format("%s %s", today, now);
 
-            write(out, String.format("""
-                    From: %s
-                    To: %s
-                    Cc: %s
-                    Date: %s
-                    Subject: %s
-                    
-                    %s
-                    \r\n.\r\n""", senderEmail, receiverEmail, CCEmailsString, DateTime, subject, message));
-
-            response = in.nextLine();
-            if(getSMTPResponseCode(response) != 250) throw new MailNotSentException();
+            SMTPCommand(
+                out,
+                inputStream,
+                String.format("""
+                From: %s
+                To: %s
+                Cc: %s
+                Date: %s
+                Subject: %s
+                
+                %s
+                \r\n.\r\n""", senderEmail, receiverEmail, CCEmailsString, DateTime, subject, message),
+                (res) -> {
+                    if(getSMTPResponseCode(res) != 250) throw new MailNotSentException();
+                }
+            );
 
             // Sending Attached Files
-            for(File file : attachedFiles){
-                write(out, "DATA");
-                response = in.nextLine();
-                System.out.println(response);
-
-                write(SMTPSocket.getOutputStream(), file);
-                response = in.nextLine();
-                System.out.println(response);
-            }
+//            for(File file : attachedFiles){
+//                write(out, "DATA");
+//                response = in.nextLine();
+//                System.out.println(response);
+//
+//                write(SMTPSocket.getOutputStream(), file);
+//                response = in.nextLine();
+//                System.out.println(response);
+//            }
 
             // Closing connection
-            write(out, "QUIT");
-            response = in.nextLine();
-            System.out.println(response);
-//            if(getSMTPResponseCode(response) != 221) throw new ConnectionNotCloseException();
+            SMTPCommand(
+                out,
+                inputStream,
+                "QUIT",
+                System.out::println
+            );
         }catch(UnknownHostException exc){
             throw new FailedConnectionException();
         }
