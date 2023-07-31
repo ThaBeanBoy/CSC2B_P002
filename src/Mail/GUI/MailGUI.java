@@ -1,48 +1,31 @@
-//import Mail.GUI.MailGUI;
+package Mail.GUI;
+
 import Mail.Model.FailedConnectionException;
 import Mail.Model.InvalidEmailException;
 import Mail.Model.MailNotSentException;
 import Mail.Model.MailSender;
-
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-import java.io.*;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Scanner;
 
-public class Main extends Application {
-    private static void write(PrintWriter out, String message){
-        out.println(message);
-        out.flush();
-    }
+public class MailGUI extends VBox {
 
-    private static int getSMTPResponseCode(String responseMessage) throws NumberFormatException{
-        String codeString = responseMessage.split(" ")[0];
-        return Integer.parseInt(codeString);
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    @Override
-    public void start(Stage stage) throws Exception{
-        VBox container = new VBox();
-        container.setPadding(new Insets(8));
-        container.setSpacing(12);
-        container.setMinWidth(500);
-        container.setAlignment(Pos.TOP_RIGHT);
+    /**
+     * A graphical interface for sending emails to an SMTP server
+     */
+    public MailGUI(){
+        this.setPadding(new Insets(8));
+        this.setSpacing(12);
+        this.setMinWidth(500);
+        this.setAlignment(Pos.TOP_RIGHT);
 
         // Server Details
         GridPane ServerDetails = MailGrid();
@@ -50,7 +33,7 @@ public class Main extends Application {
         TextField ServerTextField = addInputToGrid(ServerDetails, "SMTP Server", 0, "127.0.0.1");
         TextField PortTextField = addInputToGrid(ServerDetails, "Port Number", 1, "25");
 
-        container.getChildren().add(MailTitledPane("Server Details", ServerDetails));
+        this.getChildren().add(MailTitledPane("Server Details", ServerDetails));
 
         // Message
         GridPane MessageGrid = MailGrid();
@@ -58,7 +41,6 @@ public class Main extends Application {
         TextField SenderTextField = addInputToGrid(MessageGrid, "From", 0, "sendername@csc2b.uj.ac.za");
         TextField RecipientTextField = addInputToGrid(MessageGrid, "To", 1, "recipient@csc2b.uj.ac.za");
         TextField CCTextField = addInputToGrid(MessageGrid, "CC", 2);
-//        TextField SubjectTextField = addInputToGrid(MessageGrid, "Subject", 3);
 
         MessageGrid.add(new Label("Subject"), 0, 3);
         TextField SubjectTextField = new TextField();
@@ -70,13 +52,13 @@ public class Main extends Application {
         MessageGrid.add(new Label("Message"), 0, 5);
         MessageGrid.add(MessageBox, 0, 6);
 
-        container.getChildren().add(MailTitledPane("Message", MessageGrid));
+        this.getChildren().add(MailTitledPane("Message", MessageGrid));
 
         // Send Email Button
         Button SendEmailBtn = new Button("Send Email");
         SendEmailBtn.setOnAction(e->{
             String[] CCs = Arrays.stream(
-                    CCTextField.getText().split(",") //Splitting CC emails by comma
+                            CCTextField.getText().split(",") //Splitting CC emails by comma
                     )
                     .filter(emailAddress -> !emailAddress.isEmpty()) // Filtering out empty strings
                     .map(String::trim) // trimming the cc email
@@ -120,11 +102,7 @@ public class Main extends Application {
                 }
             }
         });
-        container.getChildren().add(SendEmailBtn);
-
-        stage.setTitle("SMTP Client");
-        stage.setScene(new Scene(container));
-        stage.show();
+        this.getChildren().add(SendEmailBtn);
     }
 
     /**
@@ -185,50 +163,5 @@ public class Main extends Application {
         TitledPane pane = new TitledPane(label, node);
         pane.setCollapsible(false);
         return pane;
-    }
-
-    public static void oldCode() {
-        try(
-                // Papercut SMTP running on port 25
-                Socket SMTPSocket = new Socket("127.0.0.1", 25);
-
-                // Stream communication tools
-                PrintWriter out = new PrintWriter(SMTPSocket.getOutputStream(), true);
-                InputStreamReader inputStream = new InputStreamReader(new BufferedInputStream(SMTPSocket.getInputStream()), "UTF-8");
-        ){
-            Scanner in = new Scanner(inputStream);
-            // Confirming connection to the SMTP server
-            System.out.println(in.nextLine());
-
-            // Sending connection request
-            write(out, "HELO relay.example.org");
-            System.out.println(in.nextLine());
-
-            // Setting sender email
-            write(out, "MAIL FROM:<bob@example.org>");
-            System.out.println(in.nextLine());
-
-            // Setting recipient
-            write(out, "RCPT TO:<alice@example.com>");
-            System.out.println(in.nextLine());
-
-            write(out, "DATA");
-            System.out.println(in.nextLine());
-
-            write(out, """
-                    From: "Bob Example" <bob@example.org>
-                    To: "Alice Example" <alice@example.com>
-                    Cc: theboss@example.com
-                    Date: Tue, 15 Jan 2008 16:02:43 -0500
-                    Subject: Test message
-                    
-                    This is my email
-                    \r\n.\r\n""");
-            System.out.println(in.nextLine());
-        }catch(UnknownHostException exc){
-            System.out.println("Unknown Host");
-        }catch(IOException exc){
-            System.out.println("IO Exception");
-        }
     }
 }
