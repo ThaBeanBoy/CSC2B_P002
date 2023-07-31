@@ -186,49 +186,4 @@ public class Main extends Application {
         pane.setCollapsible(false);
         return pane;
     }
-
-    public static void oldCode() {
-        try(
-                // Papercut SMTP running on port 25
-                Socket SMTPSocket = new Socket("127.0.0.1", 25);
-
-                // Stream communication tools
-                PrintWriter out = new PrintWriter(SMTPSocket.getOutputStream(), true);
-                InputStreamReader inputStream = new InputStreamReader(new BufferedInputStream(SMTPSocket.getInputStream()), "UTF-8");
-        ){
-            Scanner in = new Scanner(inputStream);
-            // Confirming connection to the SMTP server
-            System.out.println(in.nextLine());
-
-            // Sending connection request
-            write(out, "HELO relay.example.org");
-            System.out.println(in.nextLine());
-
-            // Setting sender email
-            write(out, "MAIL FROM:<bob@example.org>");
-            System.out.println(in.nextLine());
-
-            // Setting recipient
-            write(out, "RCPT TO:<alice@example.com>");
-            System.out.println(in.nextLine());
-
-            write(out, "DATA");
-            System.out.println(in.nextLine());
-
-            write(out, """
-                    From: "Bob Example" <bob@example.org>
-                    To: "Alice Example" <alice@example.com>
-                    Cc: theboss@example.com
-                    Date: Tue, 15 Jan 2008 16:02:43 -0500
-                    Subject: Test message
-                    
-                    This is my email
-                    \r\n.\r\n""");
-            System.out.println(in.nextLine());
-        }catch(UnknownHostException exc){
-            System.out.println("Unknown Host");
-        }catch(IOException exc){
-            System.out.println("IO Exception");
-        }
-    }
 }
