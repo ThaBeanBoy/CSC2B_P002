@@ -2,6 +2,20 @@
 
 ## Table of Content
 
+- [Marks](#marks)
+- [Introduction](#introduction)
+- [SMTP Server Setup](#smtp-server-setup)
+  * [Installation](#installation)
+  * [Connecting to Papercut](#connecting-to-papercut)
+- [Structure of project](#structure-of-project)
+- [Communicating with SMTP Server](#communicating-with-smtp-server)
+  * [Automatic Resource Management](#automatic-resource-management)
+  * [Connecting to the SMTP Server](#connecting-to-the-smtp-server)
+  * [Communicating with the SMTP Server](#communicating-with-the-smtp-server)
+    + [Sending messages to the server](#sending-messages-to-the-server)
+
+
+
 ## Marks
 
 ![marks](./docs/marks.png)
@@ -248,3 +262,4 @@ public class Main{
         }
 }
 ```
+
