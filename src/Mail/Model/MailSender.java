@@ -23,6 +23,15 @@ public class MailSender {
     // Static methods
 
     /**
+     * Returns a response from the SMTP Server
+     * @return response
+     */
+    public static String SMTPServerResponse(){
+        Scanner in = new Scanner(inputStream);
+        return in.nextLine();
+    }
+
+    /**
      * Writes a message to a PrintWriter and automatically flushes the message
      * @param out The PrintWriter to write to
      * @param message The message
@@ -76,8 +85,7 @@ public class MailSender {
     public static void SMTPCommand(String message, SMTPCommandAction lambda)
     throws FailedConnectionException, InvalidEmailException, MailNotSentException {
         write(out, message);
-        Scanner response = new Scanner(inputStream);
-        lambda.execute(response.nextLine());
+        lambda.execute(SMTPServerResponse());
     }
 
     /**
@@ -100,8 +108,7 @@ public class MailSender {
             String message = messages[i];
             write(out, message);
             if(i==(messages.length-1)){
-                Scanner response = new Scanner(inputStream);
-                lambda.execute(response.nextLine());
+                lambda.execute(SMTPServerResponse());
             }
         }
     }
@@ -115,13 +122,24 @@ public class MailSender {
         SMTPCommands(messages, res -> {});
     }
 
-    /**
-     * Returns a response from the SMTP Server
-     * @return response
-     */
-    public static String SMTPServerResponse(){
-        Scanner in = new Scanner(inputStream);
-        return in.nextLine();
+    private static void SMTPAttachFile(File file, SMTPCommandAction lambda)
+    throws MailNotSentException, FailedConnectionException, InvalidEmailException, IOException {
+        SMTPCommand("DATA");
+
+        try(FileInputStream fileIn = new FileInputStream(file.getAbsolutePath());){
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            // Reading the bytes from the file
+            while((bytesRead = fileIn.read(buffer)) != -1){
+                // Writing the bytes to the SMTP Server
+                SMTPSocket.getOutputStream().write(buffer, 0, bytesRead);
+
+                // Flushing the OutputStream
+                SMTPSocket.getOutputStream().flush();
+            }
+        }
+
+        lambda.execute(SMTPServerResponse());
     }
 
     /**
@@ -224,19 +242,17 @@ public class MailSender {
                     "."
                 },
                 (res) -> {
-                    System.out.println(res);
                     if(getSMTPResponseCode(res) != 250) throw new MailNotSentException();
                 }
             );
 
+//            System.out.println(attachedFiles.length);
              // Sending Attached Files
-//            for(File file : attachedFiles){
-//                SMTPCommand("DATA");
-//
-//                write(SMTPSocket.getOutputStream(), file);
-//                response = in.nextLine();
-//                System.out.println(response);
-//            }
+            for(File file : attachedFiles){
+                SMTPAttachFile(file, res -> {
+                    System.out.printf("Attached %s\n", file.getName());
+                });
+            }
 
             // Closing connection
             SMTPCommand("QUIT");

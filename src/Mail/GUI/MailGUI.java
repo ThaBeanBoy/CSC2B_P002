@@ -9,19 +9,28 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+/**
+ * Graphical User Interface for mail client
+ * @author TG Chipoyera
+ * @version P04
+ */
 public class MailGUI extends VBox {
-
     /**
      * A graphical interface for sending emails to an SMTP server
      */
-    public MailGUI(){
+    public MailGUI(Stage stage){
         this.setPadding(new Insets(8));
         this.setSpacing(12);
         this.setMinWidth(500);
@@ -54,6 +63,20 @@ public class MailGUI extends VBox {
 
         this.getChildren().add(MailTitledPane("Message", MessageGrid));
 
+        // Bottom buttons
+        ArrayList<File> AttachFiles = new ArrayList<>();
+        Button AttachFilesBtn = new Button("Attach File(s)");
+        AttachFilesBtn.setOnAction(e->{
+            FileChooser filePicker = new FileChooser();
+            filePicker.setTitle("Pick files to attach");
+
+            List<File> files = filePicker.showOpenMultipleDialog(stage);
+            if(files != null) {
+                AttachFiles.clear();
+                AttachFiles.addAll(files);
+            }
+        });
+
         // Send Email Button
         Button SendEmailBtn = new Button("Send Email");
         SendEmailBtn.setOnAction(e->{
@@ -64,8 +87,6 @@ public class MailGUI extends VBox {
                     .map(String::trim) // trimming the cc email
                     .toArray(String[]::new); // making the Object[] String[]
 
-            System.out.println(Arrays.toString(CCs));
-
             try{
                 MailSender.SendEmail(
                         ServerTextField.getText(),
@@ -75,7 +96,7 @@ public class MailGUI extends VBox {
                         SubjectTextField.getText(),
                         MessageBox.getText(),
                         CCs,
-                        new File[]{}
+                        AttachFiles.toArray(new File[0])
                 );
             }
             catch (IOException exc){
@@ -102,7 +123,14 @@ public class MailGUI extends VBox {
                 }
             }
         });
-        this.getChildren().add(SendEmailBtn);
+
+        FlowPane BottomButtons = new FlowPane();
+        BottomButtons.setHgap(8);
+        BottomButtons.setAlignment(Pos.BASELINE_RIGHT);
+        BottomButtons.getChildren().add(AttachFilesBtn);
+        BottomButtons.getChildren().add(SendEmailBtn);
+
+        this.getChildren().add(BottomButtons);
     }
 
     /**

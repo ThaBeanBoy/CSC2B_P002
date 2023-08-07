@@ -2,6 +2,10 @@
 
 ## Table of Content
 
+## Marks
+
+![marks](./docs/marks.png)
+
 ## Introduction
 
 For practical 1, we have to make a mail client that sends email. For this
@@ -42,6 +46,16 @@ public class Main{
   }
 }
 ```
+
+## Structure of project
+
+There were 2 main components to this practical:
+
+- Graphical User Interface
+- Mail sender functionality
+
+Both fall under the same [package](./src/Mail). For this practical, I'll just focus on 
+explaining the SMTP protocol and how we can connect to an SMTP server in java.
 
 ## Communicating with SMTP Server
 
